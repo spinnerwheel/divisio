@@ -8,7 +8,7 @@ def compute_local_descriptor(image, t_size, t_step, functions):
     function_out = []  
     out = []  
     pad = math.floor(t_size/2)  
-    image = np.pad(image,((pad,pad),(pad,pad),(0,0)),'edge',constant_values=0)  
+    image = np.pad(image,((pad,pad),(pad,pad),(0,0)),'edge')  
     [x,y,z] = image.shape  
     for i in range(pad,x-pad,t_step): 
         rows+=1 
