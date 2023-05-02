@@ -5,10 +5,10 @@ import skimage
 def compute_local_descriptor(image, t_size, t_step, functions): 
     rows = 0 
     cols = 0
-    function_out = []  
+    function_out = []
     out = []  
     pad = math.floor(t_size/2)  
-    image = np.pad(image,((pad,pad),(pad,pad),(0,0)),'edge')  
+    image = np.pad(image,((pad,pad),(pad,pad),(0,0)),'constant', constant_values=0)  
     [x,y,z] = image.shape  
     for i in range(pad,x-pad,t_step): 
         rows+=1 
@@ -19,8 +19,10 @@ def compute_local_descriptor(image, t_size, t_step, functions):
             for function in functions:  
                 function_results = function(textel)
                 for result in function_results: 
+                    result = round(result,3)
                     function_out.append(result)
-            function_out = []      
+            out.append(function_out)
+            function_out = []
     return out, rows, cols 
 
 def get_mean(img): 

@@ -19,12 +19,12 @@ welcome ="""
 """
 
 images = []
-with open("out.csv", "r") as f:
+with open("./out.csv", "r") as f:
     reader = csv.reader(f)
     images = [row for row in reader]
 
 # definizione delle variabili
-path = "/home/harold/Documents/ElaborazioneImmagini/progetto_elaborazione_immagini/dataset_v2/resized512"
+path = "./benchmark_images"
 t_size = 11
 t_step = math.floor(t_size/2)
 functions = [
