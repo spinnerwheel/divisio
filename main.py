@@ -2,7 +2,6 @@ import os
 import csv
 import math
 import matplotlib.pyplot as plt
-
 from skimage.io import imread
 from sklearn.cluster import KMeans
 from skimage import data
@@ -29,7 +28,8 @@ t_size = 11
 t_step = math.floor(t_size/2)
 functions = [
     get_stdev,
-    get_mean
+    get_mean,
+    get_LBP
 ]
 
 def cluster(out, rows, cols):
@@ -54,7 +54,7 @@ files = [os.path.join(path, "resized"+image[2]+".jpg") for image in images]
 
 result = []
 titles = [image[0]+" "+image[1] for image in images]
-for f in files:
+for f in files[:2]:
     print(f"Processing image {len(result)+1}/{len(files)}...", end="\r")
     img = imread(f)
     out, rows, cols = compute_local_descriptor(img, t_size, t_step, functions)

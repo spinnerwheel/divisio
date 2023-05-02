@@ -54,7 +54,9 @@ def get_stdev(img):
 # il secondo parametro è il raggio del cerchio 
 # il terzo parametro è il metodo di calcolo del LBP(per altre info vedere la documentazione di skimage)
 
-def get_LBP(img): 
-    img = skimage.color.rgb2gray(img) 
-    lbp = skimage.feature.local_binary_pattern(img, 8, 1, method='default') 
-    return lbp
+def get_LBP(img):
+    img = skimage.color.rgb2gray(img)
+    lbp = skimage.feature.local_binary_pattern(img, 8, 1, method='default')
+    lbp = lbp.tolist()
+    hist, _ = np.histogram(lbp, bins=np.arange(0, 257))
+    return [np.average(hist)]
