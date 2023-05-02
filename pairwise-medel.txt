@@ -1,0 +1,2 @@
+Sfondi: verde, arancio, marrone, legno
+Oggetti: brugola, chiave, metro, martello, spazzona, pinze, cacciavite, forbici, disco, testa_dado, unknown
