@@ -11,6 +11,9 @@ save_dir = "resized512"
 path = os.path.join(base, dir)
 save_path = os.path.join(base, save_dir)
 
+if not os.path.isdir(save_path):
+    os.mkdir(save_path)
+
 files = os.listdir(path)
 print("--| Recap |--")
 print(f"Path assoluta della directory: {path}")
@@ -22,8 +25,9 @@ if input("Sicuro di voler continuare? [Y/n]: ") not in ["y", "Y", ""]:
 
 paths = [os.path.join(path, f) for f in files]
 imgs = imread_collection(paths)
-resizeds = [resize(img, [512, 512]) for img in imgs]
 
-for f,r in zip(files, resizeds, strict=True):
+for img in imgs:
+    i+=1
+    print(f"Resizing and saving image {i}/{len(imgs)}...")
+    resized = resize(img, [512, 512])
     imsave(os.path.join(save_path,f), r)
-
