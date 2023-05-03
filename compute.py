@@ -1,6 +1,7 @@
 import numpy as np 
 import math
 import skimage
+import cv2
 
 def compute_local_descriptor(image, t_size, t_step, functions): 
     rows = 0 
@@ -8,7 +9,8 @@ def compute_local_descriptor(image, t_size, t_step, functions):
     function_out = []
     out = []  
     pad = math.floor(t_size/2)  
-    image = np.pad(image,((pad,pad),(pad,pad),(0,0)),'constant', constant_values=0)  
+    #image = np.pad(image,((pad,pad),(pad,pad),(0,0)),'constant', constant_values=0)
+    image = np.pad(image,((pad,pad),(pad,pad),(0,0)),'edge')
     [x,y,z] = image.shape  
     for i in range(pad,x-pad,t_step): 
         rows+=1 
@@ -56,7 +58,8 @@ def get_stdev(img):
 
 def get_LBP(img):
     img = skimage.color.rgb2gray(img)
-    lbp = skimage.feature.local_binary_pattern(img, 8, 1, method='default')
+    img = skimage.img_as_ubyte(img)
+    lbp = skimage.feature.local_binary_pattern(img, 8, 1, method='uniform')
     lbp = lbp.tolist()
     hist, _ = np.histogram(lbp, bins=np.arange(0, 257))
-    return [np.average(hist)]
+    return hist.tolist()
