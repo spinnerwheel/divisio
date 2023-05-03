@@ -15,8 +15,7 @@ t_size = 7
 t_step = math.floor(t_size/2)
 functions = [
     get_mean,
-    get_stdev
-    #get_LBP
+    get_stdev,
 ]
 
 result = []
@@ -45,13 +44,11 @@ def load_images_from_folder(folder):
     return images
 
 if __name__ == '__main__':
-    #per ogni immagine nella cartella new_photos
     image_list = load_images_from_folder(path)
     for image in image_list:
         print(f"Processing image {len(result)+1}/{len(image_list)}...", end="\r")
-        image = cv2.resize(image, (256,256))
-        #image = histogram_equalization(image)           
-        #image = gaussian_filter(image,)
+        image = cv2.resize(image, (256,256))      
+        image = gaussian_filter(image)
         out, rows, cols = compute_local_descriptor(image, t_size, t_step, functions)
         image_out = cluster(out, rows, cols)
         result.append(image_out)

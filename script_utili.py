@@ -5,11 +5,10 @@ def gaussian_filter(img, kernel_size=7, sigma=1.2):
     blur_gray = cv2.GaussianBlur(img,(kernel_size, kernel_size), sigma)
     return blur_gray
 
-def hue_hsv_filter(img):
+def hsv_filter(img):
     # Convert to HSV color space and separate the V channel
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    h_channel = hsv[:,:,0]
-    return h_channel
+    return hsv
 
 def ycbcr_filter(img):
     # Convert to YCrCb color space and separate the Y channel

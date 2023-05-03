@@ -2,6 +2,7 @@ import numpy as np
 import math
 import skimage
 import cv2
+from skimage.feature import hog
 
 def compute_local_descriptor(image, t_size, t_step, functions): 
     rows = 0 
@@ -63,3 +64,12 @@ def get_LBP(img):
     lbp = lbp.tolist()
     hist, _ = np.histogram(lbp, bins=np.arange(0, 257))
     return hist.tolist()
+
+def get_hog_features(patch):
+    # patch è il tassello di immagine di input
+    # converte l'immagine in scala di grigi
+    patch_gray = skimage.color.rgb2gray(patch)
+    # calcola le feature HOG
+    fd, hog_image = hog(patch_gray, orientations=8, pixels_per_cell=(16, 16), cells_per_block=(1, 1), visualize=True, block_norm='L2-Hys')
+    # restituisce la lista di feature HOG
+    return fd.tolist()
