@@ -1,2 +1,3 @@
-Sfondi: verde, arancio, marrone, legno
-Oggetti: brugola, chiave, metro, martello, spazzona, pinze, cacciavite, forbici, disco, testa_dado, unknown
+Sfondi: tovaglia, legno, parque, piastrella
+Oggetti: brugola, chiave, moschettone, martello, spatola, cesoie, cacciavite, forbici, disco, forchetta, paletta, scalpello, unknown
+
