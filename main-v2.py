@@ -11,16 +11,23 @@ from compute import *
 from PIL import Image
 from script_utili import *
 
-t_size = 7
-t_step = math.floor(t_size/2)
+t_size = 9
+t_step = math.floor(t_size-2)
 functions = [
     get_mean,
     get_stdev,
+    #get_LBP
 ]
-
 result = []
-titles = ['legno','marmo','tessuto']
-path = './new_photos/'
+titles = []
+path = './benchmark_images/'
+images_title = os.listdir(path)
+for title in images_title:
+    text,obj,num = title.split('_')
+    titles.append(text+'_'+obj)
+    
+kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,3))
+kernel1 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,5))
 
 def cluster(out, rows, cols):
     label = KMeans(n_clusters=2, n_init="auto").fit(out).labels_
@@ -43,22 +50,24 @@ def load_images_from_folder(folder):
             images.append(img)
     return images
 
-    
-def mat_to_bool(mat):
-    return mat.astype(bool)
+def sobel(image):
+    sobel_x = (cv2.Sobel(image, cv2.CV_32F, 1, 0, ksize=9))
+    sobel_y = (cv2.Sobel(image, cv2.CV_32F, 0, 1, ksize=9))
+    image = np.sqrt(np.square(sobel_x) + np.square(sobel_y))
+    return image
 
 if __name__ == '__main__':
     image_list = load_images_from_folder(path)
     for image in image_list:
         print(f"Processing image {len(result)+1}/{len(image_list)}...", end="\r")
-        image = cv2.resize(image, (128,128))
-        #image = gaussian_filter(image)
-        out, rows, cols = compute_local_descriptor(image, t_size, t_step, functions)
-        image_out = cluster(out, rows, cols)
-        #erode the image to remove noise using cv2.erode
-        #image_out = cv2.convertScaleAbs(image_out)
-        #image_out = cv2.erode(image_out, kernel, iterations=1)
-        #image_out = cv2.dilate(image_out, kernel1, iterations=1)
-        result.append(image_out)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image = alpha_trimmed(image,7)       
+        image = sobel(image)
+                
+        #image = np.concatenate((image_alfa, image_median), axis=1)
+    # applica un filtro di Sobel per individuare i bordi dell'immagine
+        #out, rows, cols = compute_local_descriptor(image, t_size, t_step, functions)
+        #image = cluster(out, rows, cols)
+        result.append(image)
         
-    plot(result, titles)
+    plot(result,titles)
