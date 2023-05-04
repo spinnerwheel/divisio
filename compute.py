@@ -1,7 +1,6 @@
 import numpy as np 
 import math
 import skimage
-import cv2
 from skimage.feature import hog
 
 def compute_local_descriptor(image, t_size, t_step, functions): 
@@ -45,17 +44,6 @@ def get_stdev(img):
     stdevG = np.std(g) 
     stdevB = np.std(b) 
     return [stdevR, stdevG, stdevB]
-
-#Il Number of circularly symmetric neighbor set points (quantization of the angular space)  
-# è uno dei parametri utilizzati nel calcolo del descrittore di texture LBP (Local Binary Pattern),  
-#che nel nostro caso è il secondo parametro.  
-# Questo parametro fa riferimento al numero di punti di campionamento che vengono distribuiti su un cerchio immaginario  
-# intorno ad ogni pixel dell'immagine. La distribuzione di questi punti di campionamento può essere uniforme o non uniforme sulla circonferenza, 
-# e il numero di punti di campionamento influisce sulla sensibilità del descrittore ai cambiamenti di texture.  
-# In pratica, aumentando il numero di punti di campionamento si ottengono descrittori di texture più discriminanti,  
-# ma questo aumenta anche il costo computazionale. 
-# il secondo parametro è il raggio del cerchio 
-# il terzo parametro è il metodo di calcolo del LBP(per altre info vedere la documentazione di skimage)
 
 def get_LBP(img):
     img = skimage.color.rgb2gray(img)

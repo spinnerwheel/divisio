@@ -43,14 +43,22 @@ def load_images_from_folder(folder):
             images.append(img)
     return images
 
+    
+def mat_to_bool(mat):
+    return mat.astype(bool)
+
 if __name__ == '__main__':
     image_list = load_images_from_folder(path)
     for image in image_list:
         print(f"Processing image {len(result)+1}/{len(image_list)}...", end="\r")
-        image = cv2.resize(image, (256,256))      
-        image = gaussian_filter(image)
+        image = cv2.resize(image, (128,128))
+        #image = gaussian_filter(image)
         out, rows, cols = compute_local_descriptor(image, t_size, t_step, functions)
         image_out = cluster(out, rows, cols)
+        #erode the image to remove noise using cv2.erode
+        #image_out = cv2.convertScaleAbs(image_out)
+        #image_out = cv2.erode(image_out, kernel, iterations=1)
+        #image_out = cv2.dilate(image_out, kernel1, iterations=1)
         result.append(image_out)
         
     plot(result, titles)
