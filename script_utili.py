@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import os
 
 def gaussian_filter(img, kernel_size=7, sigma=1.2):
     # Apply a Gaussian Blur
@@ -70,3 +71,11 @@ def alpha_trimmed(image,kernel=7):
             textel = textel[1:-1]
             tmp[x:x+kernel,y:y+kernel] = np.mean(textel)
     return tmp
+
+def load_images_from_folder(folder):
+    images = []
+    for filename in os.listdir(folder):
+        img = cv2.imread(os.path.join(folder,filename))
+        if img is not None:
+            images.append(img)
+    return images
