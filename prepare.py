@@ -4,11 +4,11 @@ from skimage.io import imread, imread_collection, imshow_collection, show, imsav
 import os
 
 i = 0
-base = "C:/Users/massi/OneDrive/Desktop"
+base = ""
 # nome della directory da cui recuperare le immagini
-dir = "new_dataset"
+dir = "benchmark_images"
 # nome della directory in cui vuoi salvare il file
-save_dir = "resized512"
+save_dir = "benchmark_images"
 path = os.path.join(base, dir)
 save_path = os.path.join(base, save_dir)
 
@@ -33,4 +33,4 @@ for img, f in zip(imgs, files):
     resized = resize(img, [512, 512])
     resized = resized * 255
     sus = resized.astype("uint8")
-    imsave(f"{save_path}/resized{i}.jpg", sus, check_contrast=False)
+    imsave(f"{save_path}/{f}", sus, check_contrast=False)

@@ -51,6 +51,8 @@ def alpha_trimmed(image, kernel=7):
     `image`: an np.ndarray image
     `kernel`: dimension of the kernel, default=7
     """
+    if kernel == 0:
+        return image
     tmp = np.copy(image)
     for x in range(0, len(tmp)-kernel, kernel):
         for y in range(0, len(tmp[0])-kernel, kernel):
@@ -60,7 +62,7 @@ def alpha_trimmed(image, kernel=7):
             tmp[x:x+kernel, y:y+kernel] = np.mean(textel)
     return tmp
 
-def sobel(image):
+def sobel_filter(image):
     sobel_x = cv2.Sobel(image, cv2.CV_32F, 1, 0, ksize=9)
     sobel_y = cv2.Sobel(image, cv2.CV_32F, 0, 1, ksize=9)
     image = np.sqrt(np.square(sobel_x) + np.square(sobel_y))
@@ -97,7 +99,7 @@ def plot(images, titles=None, suptitle=None):
             plt.title(suptitle)
     elif isinstance(images, list):
         dim = math.ceil(math.sqrt(len(images)))
-        figure, axes = plt.subplots(dim, dim, sharex=True, sharey=True)
+        figure, axes = plt.subplots(dim, dim, sharex=True, sharey=True, constrained_layout=True)
         axs = axes.ravel()
         if suptitle is not None and isinstance(suptitle, str):
             figure.suptitle(suptitle)
