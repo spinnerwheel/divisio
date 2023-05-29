@@ -26,7 +26,7 @@ if __name__ == "__main__":
         image = ycbcr_filter(image)[0]
         image = gaussian_filter(image, 2.2)
         image = canny_filter(image, 1.2,25,55)
-        imge = fill_holes(image)
+        image = dilate_image(image, kernel)
         result.append(image)
         
     plot(result, filenames)
