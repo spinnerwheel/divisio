@@ -1,15 +1,16 @@
 import math
 import os
-
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+import skimage
+from skimage import io, morphology,util
 from skimage.color import rgb2gray
 from skimage.exposure import equalize_hist
 from skimage.filters.rank import otsu
 from skimage.io import imread, imread_collection
 from skimage.util import img_as_ubyte
 from sklearn.cluster import KMeans
+from PIL import Image,ImageFilter
 
 # pylint: disable = no-name-in-module
 
@@ -25,25 +26,36 @@ WELCOME ="""
 """
 
 def hsv_filter(image):
-    # Convert to HSV color space and separate the V channel
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    return [hsv[:, :, 0], hsv[:, :, 1], hsv[:, :, 2]]
+    hsv_image = image.convert('HSV')
+    h_channel, s_channel, v_channel = hsv_image.split()
+    return [np.array(h_channel), np.array(s_channel), np.array(v_channel)]
 
 def ycbcr_filter(image):
-    # Convert to YCrCb color space and separate the Y channel
-    ycbcr = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)
-    return [ycbcr[:, :, 0], ycbcr[:, :, 1], ycbcr[:, :, 2]]
+    ycbcr_image = skimage.color.rgb2ycbcr(image)
+    y_channel, cb_channel, cr_channel = ycbcr_image[:,:,0], ycbcr_image[:,:,1], ycbcr_image[:,:,2]
+    return [y_channel, cb_channel, cr_channel]
 
-def binarize(image, footprint=None):
+def gaussian_filter(image, sigma):
     """
-    Binarization function using `otsu` method from skimage
+    Apply the gaussian filter to `image`.
+    `image`: a PIL Image instance
+    `sigma`: standard deviation of the gaussian kernel
     """
-    # Threshold the image
-    if footprint is None:
-        # footprint diventa una copia dell'immagine con tutti a valori a 1
-        footprint = np.ones([len(image), len(image)])
-    binarized = otsu(image, footprint)
-    return binarized
+    filtered_image = skimage.filters.gaussian(image, sigma=sigma)
+    return filtered_image
+
+def connected_components(image):
+    """
+    Apply the connected components algorithm to `image`.
+    `image`: an np.ndarray image
+    """
+    return skimage.measure.label(image, background=0)
+
+def fill_holes(image):
+    filled = util.invert(util.img_as_bool(image))
+    filled = util.invert(util.img_as_float(morphology.binary_fill_holes(filled)))
+    return filled
+
 
 def alpha_trimmed(image, kernel=7):
     """
@@ -60,13 +72,19 @@ def alpha_trimmed(image, kernel=7):
             textel = np.sort(textel, axis=None)
             textel = textel[1:-1]
             tmp[x:x+kernel, y:y+kernel] = np.mean(textel)
-    return tmp
+    return Image.fromarray(tmp)
 
-def sobel_filter(image):
-    sobel_x = cv2.Sobel(image, cv2.CV_32F, 1, 0, ksize=9)
-    sobel_y = cv2.Sobel(image, cv2.CV_32F, 0, 1, ksize=9)
-    image = np.sqrt(np.square(sobel_x) + np.square(sobel_y))
-    return image
+def canny_filter(image, sigma,lb,ub):
+    return skimage.feature.canny(image, sigma=sigma, low_threshold=lb, high_threshold=ub)
+
+def erode_image(image,kernel):
+    return skimage.morphology.erosion(image, kernel)
+
+def bilateral_filter(image):
+    return skimage.restoration.denoise_bilateral(image,channel_axis=-1)
+
+def dilate_image(image,kernel):
+    return skimage.morphology.dilation(image, kernel)
 
 def normalize(image):
     out = img_as_ubyte(image)
@@ -82,7 +100,7 @@ def load_images_from_folder(folder, return_filenames=False):
     images = []
     filenames = os.listdir(folder)
     for filename in filenames:
-        image = imread(os.path.join(folder, filename))
+        image = skimage.io.imread(os.path.join(folder,filename))
         images.append(image)
     if return_filenames is True:
         return images, filenames
