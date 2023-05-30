@@ -1,8 +1,16 @@
 import math
 
+import numpy as np
 from compute import *
 from util import *
 import argparse
+import skimage as sk 
+from sklearn.datasets import make_blobs
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+from sklearn import metrics
+from skimage.color import rgb2gray
 
 
 if __name__ == "__main__":
@@ -33,4 +41,43 @@ if __name__ == "__main__":
         #image = contornus(image)
         result.append(image)
         
-    plot(result, filenames)
+
+final = []
+y = []
+
+for filename in filenames:
+    
+    label = filename.split("_")[1]
+    y.append(label)
+
+for image , imageOriginal in zip(result, images):
+
+    imageOriginal = cv2.resize(imageOriginal, (128,128))
+
+    im = imageOriginal[:,:,0] & image
+    cv2.imshow('image',im)
+
+    mu = sk.measure.moments_central(im)
+    nu = sk.measure.moments_normalized(mu)
+    res = sk.measure.moments_hu(nu)
+    final.append(res[0:2])
+
+
+X_train, X_test, y_train, y_test = train_test_split(final, y, test_size = 0.45)
+
+knn = KNeighborsClassifier(n_neighbors = 3) # 3 vicini più vicini con questo dobbiamo giocarci
+
+knn.fit(X_train, y_train)
+
+y_pred = knn.predict(X_test)
+
+#print(y_pred) # stampo le predizioni del knn
+
+print("Accuracy with k=3", accuracy_score(y_test, y_pred)*100) # stampo la percentuale di accuratezza
+
+confusion_matrix = metrics.confusion_matrix(y_test, y_pred)
+
+cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix = confusion_matrix, display_labels = knn.classes_)
+
+cm_display.plot()
+plt.show()

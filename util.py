@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 # pylint: disable = no-name-in-module
 
 # Constants
-PATH = "/path/to/divisio/folder"
+PATH = ""
 WELCOME ="""
  ____ ____ ____ ____ ____ ____ ____ 
 ||d |||i |||v |||i |||s |||i |||o ||
