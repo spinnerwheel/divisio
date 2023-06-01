@@ -20,13 +20,17 @@ if __name__ == "__main__":
 
     images, filenames = load_images_from_folder(folder, return_filenames=True)
     result = []
-    kernel = skimage.morphology.disk(7)
-    for image in images[:4]:
-        print(f"Processing image {len(result)}/{len(images)}...", end="\r")
+    dilate_kernel = skimage.morphology.square(8)
+    erode_kernel = skimage.morphology.square(7)
+    for image in images:
+        print(f"Processing image {len(result)+1}/{len(images)}...", end="\r")
+        #resize the image with cv2 to 128x128
+        image = cv2.resize(image, (128,128))
         image = ycbcr_filter(image)[0]
-        image = gaussian_filter(image, 2.2)
-        image = canny_filter(image, 1.2,25,55)
-        image = dilate_image(image, kernel)
+        image = gaussian_filter(image, 2.4)
+        image = canny_filter(image, 1,30,60)
+        image = dilate_image(image, dilate_kernel)
+        #image = contornus(image)
         result.append(image)
         
     plot(result, filenames)

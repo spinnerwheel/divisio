@@ -1,18 +1,8 @@
-import math
-import os
-import matplotlib.pyplot as plt
-import numpy as np
-import skimage
 import cv2
-from skimage.segmentation import random_walker
-from skimage import io, morphology,util
-from skimage.color import rgb2gray
-from skimage.exposure import equalize_hist
-from skimage.filters.rank import otsu
-from skimage.io import imread, imread_collection
-from skimage.util import img_as_ubyte
-from sklearn.cluster import KMeans
-from PIL import Image,ImageFilter
+import os
+import math
+import numpy as np
+import matplotlib.pyplot as plt
 
 # pylint: disable = no-name-in-module
 
@@ -27,99 +17,11 @@ WELCOME ="""
 
 """
 
-def hsv_filter(image):
-    hsv_image = image.convert('HSV')
-    h_channel, s_channel, v_channel = hsv_image.split()
-    return [np.array(h_channel), np.array(s_channel), np.array(v_channel)]
-
-def ycbcr_filter(image):
-    ycbcr_image = skimage.color.rgb2ycbcr(image)
-    y_channel, cb_channel, cr_channel = ycbcr_image[:,:,0], ycbcr_image[:,:,1], ycbcr_image[:,:,2]
-    return [y_channel, cb_channel, cr_channel]
-
-def gaussian_filter(image, sigma):
-    """
-    Apply the gaussian filter to `image`.
-    `image`: a PIL Image instance
-    `sigma`: standard deviation of the gaussian kernel
-    """
-    filtered_image = skimage.filters.gaussian(image, sigma=sigma)
-    return filtered_image
-
-def connected_components(image):
-    """
-    Apply the connected components algorithm to `image`.
-    `image`: an np.ndarray image
-    """
-    return skimage.measure.label(image, background=0)
-
-def fill_holes(image):
-    filled = util.invert(util.img_as_bool(image))
-    filled = util.invert(util.img_as_float(morphology.binary_fill_holes(filled)))
-    return filled
-
-
-def alpha_trimmed(image, kernel=7):
-    """
-    Apply the alpha trimmed filter to `image`.
-    `image`: an np.ndarray image
-    `kernel`: dimension of the kernel, default=7
-    """
-    if kernel == 0:
-        return image
-    tmp = np.copy(image)
-    for x in range(0, len(tmp)-kernel, kernel):
-        for y in range(0, len(tmp[0])-kernel, kernel):
-            textel = tmp[x:x+kernel, y:y+kernel]
-            textel = np.sort(textel, axis=None)
-            textel = textel[1:-1]
-            tmp[x:x+kernel, y:y+kernel] = np.mean(textel)
-    return Image.fromarray(tmp)
-
-def canny_filter(image, sigma,lb,ub):
-    return skimage.feature.canny(image, sigma=sigma, low_threshold=lb, high_threshold=ub)
-
-def erode_image(image,kernel):
-    return skimage.morphology.erosion(image, kernel)
-
-def bilateral_filter(image):
-    return skimage.restoration.denoise_bilateral(image,channel_axis=-1)
-
-def dilate_image(image,kernel):
-    return skimage.morphology.dilation(image, kernel)
-
-def normalize(image):
-    out = img_as_ubyte(image)
-    return out
-
-def cluster(out, rows, cols):
-    label = KMeans(n_clusters=3, n_init="auto").fit(out).labels_
-    return label.reshape(rows, cols)
-
-def fill(img):
-    pts = _extract_points(img)
-    pts = pts.astype("int32")
-    img = img.astype("uint8")
-    out = cv2.fillPoly(img, pts, 255)
-    return out
-
-def _extract_points(img):
-    """Extract all the points from binarized image"""
-    if not isinstance(img, np.uint8):
-        img = img_as_ubyte(img)
-    pts = np.argwhere(img == 255)
-    return pts
-
-def region_growing(img, markers):
-    return random_walker(img, markers)
-
-# Utility relative al caricamento e mostra di immagini
-
 def load_images_from_folder(folder, return_filenames=False):
     images = []
     filenames = os.listdir(folder)
     for filename in filenames:
-        image = skimage.io.imread(os.path.join(folder,filename))
+        image = cv2.imread(os.path.join(folder,filename))
         images.append(image)
     if return_filenames is True:
         return images, filenames
@@ -179,3 +81,61 @@ def save(images, filenames, dir="saved"):
         print("Il tipo degli oggetti passati non è supportato.")
         print(f"images: {type(images)} (should be a list of images or an image)")
         print(f"filenames: {type(filenames)} (should be a list of str or a str)")
+
+#write a script that returns the y channel of the ycbcr image
+def ycbcr_filter(image):
+    """Returns the YCbCr image and the Y channel"""
+    ycbcr_image = cv2.cvtColor(image, cv2.COLOR_RGB2YCrCb)
+    y_channel = ycbcr_image[:,:,0]
+    return ycbcr_image, y_channel
+
+def gray_filter(image):
+    """Returns the gray image"""
+    return cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+
+#write a function that takes in input an image and a sigma value and returns the gaussian filtered image
+def gaussian_filter(image, sigma):
+    """Returns the gaussian filtered image"""
+    return cv2.GaussianBlur(image, (0,0), sigma)
+
+#write a function that takes in input an image and a sigma value and returns the canny filtered image
+def canny_filter(image, sigma, low_threshold, high_threshold):
+    """Returns the canny filtered image"""
+    return cv2.Canny(image, low_threshold, high_threshold, sigma)
+
+#write a function that takes in input an image and a kernel and returns the dilated image
+def dilate_image(image, kernel):
+    """Returns the dilated image"""
+    return cv2.dilate(image, kernel)
+
+#write a function that takes in input an image and a kernel and returns the eroded image
+def erode_image(image, kernel):
+    """Returns the eroded image"""
+    return cv2.erode(image, kernel)
+
+def bilateral_filter(image, sigma_color, sigma_space):
+    """Returns the bilateral filtered image
+    image = image to be filtered
+    sigma_color = filter sigma in the color space (the higher the more colors are considered)
+    sigma_space = filter sigma in the coordinate space  (the higher the more pixels are considered)
+    """
+    return cv2.bilateralFilter(image)
+
+def contornus(image):
+    """Returns the contornus of the image"""
+    contours, hierarchy = cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    img_fill = np.zeros_like(image)
+    cv2.drawContours(img_fill, contours, -1, 255, cv2.FILLED)
+    cv2.imshow("contornus", img_fill)
+    cv2.waitKey(0)
+    i = 0
+    
+def morphology_fill(image):
+    kernel = np.ones((5, 5), np.uint8)
+    erosion = cv2.erode(image, kernel, iterations=1)
+    dilation = cv2.dilate(erosion, kernel, iterations=1)
+    filled = cv2.subtract(dilation, image)
+
+def connected_components(image):
+    """Returns the connected components of the image"""
+    return cv2.connectedComponents(image)
