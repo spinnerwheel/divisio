@@ -3,6 +3,8 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import skimage
+import cv2
+from skimage.segmentation import random_walker
 from skimage import io, morphology,util
 from skimage.color import rgb2gray
 from skimage.exposure import equalize_hist
@@ -94,6 +96,23 @@ def cluster(out, rows, cols):
     label = KMeans(n_clusters=3, n_init="auto").fit(out).labels_
     return label.reshape(rows, cols)
 
+def fill(img):
+    pts = _extract_points(img)
+    pts = pts.astype("int32")
+    img = img.astype("uint8")
+    out = cv2.fillPoly(img, pts, 255)
+    return out
+
+def _extract_points(img):
+    """Extract all the points from binarized image"""
+    if not isinstance(img, np.uint8):
+        img = img_as_ubyte(img)
+    pts = np.argwhere(img == 255)
+    return pts
+
+def region_growing(img, markers):
+    return random_walker(img, markers)
+
 # Utility relative al caricamento e mostra di immagini
 
 def load_images_from_folder(folder, return_filenames=False):
@@ -116,18 +135,23 @@ def plot(images, titles=None, suptitle=None):
         if suptitle is not None:
             plt.title(suptitle)
     elif isinstance(images, list):
-        dim = math.ceil(math.sqrt(len(images)))
-        figure, axes = plt.subplots(dim, dim, sharex=True, sharey=True, constrained_layout=True)
-        axs = axes.ravel()
-        if suptitle is not None and isinstance(suptitle, str):
-            figure.suptitle(suptitle)
-        if titles is None:
-            for a, i in zip(axs, images):
-                a.imshow(i)
+        if len(images) == 1:
+            plt.imshow(images[0], cmap="gray")
+            if suptitle is not None:
+                plt.title(suptitle)
         else:
-            for a, i, t in zip(axs, images, titles):
-                a.imshow(i)
-                a.set_title(t)
+            dim = math.ceil(math.sqrt(len(images)))
+            figure, axes = plt.subplots(dim, dim, sharex=True, sharey=True, constrained_layout=True)
+            axs = axes.ravel()
+            if suptitle is not None and isinstance(suptitle, str):
+                figure.suptitle(suptitle)
+            if titles is None:
+                for a, i in zip(axs, images):
+                    a.imshow(i)
+            else:
+                for a, i, t in zip(axs, images, titles):
+                    a.imshow(i)
+                    a.set_title(t)
     else:
         print("Il tipo degli oggetti passati non è supportato.")
         print(f"images: {type(images)} (should be a list of images or an image)")
