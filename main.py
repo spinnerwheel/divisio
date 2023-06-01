@@ -41,7 +41,6 @@ if __name__ == "__main__":
         #image = contornus(image)
         result.append(image)
         
-
 final = []
 y = []
 
@@ -50,12 +49,11 @@ for filename in filenames:
     label = filename.split("_")[1]
     y.append(label)
 
-for image , imageOriginal in zip(result, images):
+for mask , imageOriginal in zip(result, images):
 
     imageOriginal = cv2.resize(imageOriginal, (128,128))
 
-    im = imageOriginal[:,:,0] & image
-    cv2.imshow('image',im)
+    im = imageOriginal[:,:,0] & mask
 
     mu = sk.measure.moments_central(im)
     nu = sk.measure.moments_normalized(mu)
@@ -63,7 +61,7 @@ for image , imageOriginal in zip(result, images):
     final.append(res[0:2])
 
 
-X_train, X_test, y_train, y_test = train_test_split(final, y, test_size = 0.45)
+X_train, X_test, y_train, y_test = train_test_split(final, y, test_size = 0.5)
 
 knn = KNeighborsClassifier(n_neighbors = 3) # 3 vicini più vicini con questo dobbiamo giocarci
 

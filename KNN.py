@@ -8,29 +8,19 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn import metrics
+from util import *
 
 
+folder = "./saved"
 
-X, y = make_blobs(n_samples = 100, n_features = 3, centers = 2,cluster_std = 1.5, random_state = 4)
-#print(X)# featurs estratte nella forma di array di array(3 feature e 10 oggetti = 1 array che contiene 10 array di 3 elementi)
-print(y)# lui sa tutto e ti da la classe di ogni oggetto
+images, filenames = load_images_from_folder(folder, return_filenames=True)
+result = []
 
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.45)
-
-knn = KNeighborsClassifier(n_neighbors = 3) # 3 vicini più vicini con questo dobbiamo giocarci
-
-knn.fit(X_train, y_train)
-
-y_pred = knn.predict(X_test)
-
-#print(y_pred) # stampo le predizioni del knn
-
-print("Accuracy with k=2", accuracy_score(y_test, y_pred)*100) # stampo la percentuale di accuratezza
-
-confusion_matrix = metrics.confusion_matrix(y_test, y_pred)
-
-cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix = confusion_matrix, display_labels = knn.classes_)
-
-cm_display.plot()
-plt.show()
+for image in images:
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    img = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)[1]
+    num_labels, labels = cv2.connectedComponents(img)
+    for i in range(1, num_labels):
+        labels[labels == i] = 255
+    cv2.imshow("image", labels)
+    cv2.waitKey(0)
