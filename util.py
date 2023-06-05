@@ -82,6 +82,10 @@ def save(images, filenames, dir="saved"):
         print(f"images: {type(images)} (should be a list of images or an image)")
         print(f"filenames: {type(filenames)} (should be a list of str or a str)")
 
+def median_filter(image, kernel_size):
+    """Returns the median filtered image"""
+    return cv2.medianBlur(image, kernel_size)
+
 #write a script that returns the y channel of the ycbcr image
 def ycbcr_filter(image):
     """Returns the YCbCr image and the Y channel"""

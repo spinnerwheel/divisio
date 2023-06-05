@@ -11,6 +11,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn import metrics
 from skimage.color import rgb2gray
+from columGrowing import *
 
 
 if __name__ == "__main__":
@@ -28,19 +29,26 @@ if __name__ == "__main__":
 
     images, filenames = load_images_from_folder(folder, return_filenames=True)
     result = []
-    dilate_kernel = skimage.morphology.square(8)
-    erode_kernel = skimage.morphology.square(7)
+    dilate_kernel = skimage.morphology.disk(1)
+    dilate_kernel_two = skimage.morphology.disk(2)
+    erode_kernel = np.ones((1,4), np.uint8)
     for image in images:
         print(f"Processing image {len(result)+1}/{len(images)}...", end="\r")
         #resize the image with cv2 to 128x128
         image = cv2.resize(image, (128,128))
         image = ycbcr_filter(image)[0]
+        first = image[:,:,0]
         image = gaussian_filter(image, 2.4)
         image = canny_filter(image, 1,30,60)
         image = dilate_image(image, dilate_kernel)
-        #image = contornus(image)
+        image = median_filter(image, 3)
+        gc = columGrowing(image)
+        gc.recursive_call()
+        image = gc.output_image
+
         result.append(image)
-        
+    plot(result, filenames, "Result")
+'''      
 final = []
 y = []
 
@@ -79,3 +87,4 @@ cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix = confusion_matrix,
 
 cm_display.plot()
 plt.show()
+'''
