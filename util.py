@@ -3,6 +3,8 @@ import os
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import datetime
 
 # pylint: disable = no-name-in-module
 
@@ -143,3 +145,148 @@ def morphology_fill(image):
 def connected_components(image):
     """Returns the connected components of the image"""
     return cv2.connectedComponents(image)
+
+
+class circleGrowing:
+    image = None
+    output_image = None
+    inside = False
+    onEdge = False
+    ended = False
+    results = []
+
+    def __init__(self, image=None):
+        if image is None:
+            self.image = self._generate_mock_image(64, 64)
+        else:
+            self.image = image
+        self.colums = self.image.shape[0]
+        self.rows = self.image.shape[1]
+        self.output_image = self.image.copy() #np.zeros(self.image.shape).astype(np.uint8)
+        self.marked = np.stack([self.image]*3, axis=-1)
+
+
+    def _reset(self):
+        self.inside = False
+        self.onEdge = False
+
+
+    def _mark(self, row, col):
+        self.output_image[row, col] = 255
+        self.marked[row, col] = [255, 0, 0]
+
+        # self.log.append([row, col])
+
+        # self.marked[row, col] = [255, 0, 0]
+        # plt.imshow(self.marked, )
+        # plt.axis("off")
+        # plt.show(block=False)
+        # plt.close()
+
+
+    def _generate_mock_image(self, width, height):
+        image = np.zeros((width, height))
+        center_x = width // 2
+        center_y = height // 2
+        radius = [20, 15, 10, 5]
+        xx, yy = np.mgrid[:height, :width]
+        distance = np.sqrt((xx - center_x) ** 2 + (yy - center_y) ** 2)
+        image[distance < radius[0]] = 255
+        image[distance < radius[1]] = 0
+        image[distance < radius[2]] = 255
+        image[distance < radius[3]] = 0
+        return image
+
+
+    def save_results_as_video(self):
+        base_filename = datetime.datetime.now()
+        for i, result in enumerate(self.results):
+            image = np.array(result, dtype=np.uint8)
+            cv2.imwrite(f"{base_filename}-{i}.jpg", image)
+
+
+###########################################################
+
+
+    def _next_neighbors_edge(self, neighbors):
+        """The next internal edge should be one that has value 255 and has a 0 near him"""
+        indices = np.argwhere(neighbors == 255)
+        for i, j in indices:
+            if (i > 0 and neighbors[i-1, j] == 0):
+                return i-1,j
+            if (i < 2 and neighbors[i+1, j] == 0):
+                return i+1,j
+            if (j > 0 and neighbors[i, j-1] == 0):
+                return i, j-1
+            if (j < 2 and neighbors[i, j+1] == 0):
+                return i, j+1
+        return None, None
+
+
+    def _get_8_neighbors(self, row, col, image=None):
+        if image is None:
+            image = self.image
+        return image[row-1:row+2, col-1:col+2]
+
+
+    def _next_internal_edge(self, row, col):
+        self.image[row, col] = 128
+        neighbors = self._get_8_neighbors(row, col)
+        n, m = self._next_neighbors_edge(neighbors)
+        if n is None or m is None:
+            return n, m
+        return row+n-1, col+m-1
+
+
+    def _first_internal_edge(self):
+        index = 0
+        row, col = (None, None)bibite
+        while not self.inside:
+            if self.onEdge is True:
+                if self.image[index+1, index+1] == 0:
+                    self.inside = True
+                    row, col = (index, index)
+            if self.image[index, index] == 255:
+                self.onEdge = True
+            index+=1
+            # failsafe condition, to break a possible loop
+            if index == 10000:
+                choise = input("10000 iterations passed. Want to continue? [y/N]")
+                if choise.upper() != "Y":
+                    break
+        return row, col
+
+
+    def _recursive_layer_call(self, row, col):
+        if row is None or col is None:
+            pass
+        else:
+            self._mark(row, col)
+            row, col = self._next_internal_edge(row, col)
+            self._recursive_layer_call(row, col)
+
+
+    def _recursive_image_call(self):
+        for i in range(10):
+            self._reset()
+            row, col = self._first_internal_edge()
+            self._mark(row, col)
+            self._recursive_layer_call(row, col)
+            self.image = self.output_image.copy()
+            plt.imshow(self.image)
+            plt.show()
+
+    def start(self):
+        row, col = self._first_internal_edge()
+        # print(f"Point: {row}, {col}\t", end="\r")
+        self._mark(row, col)
+        self._recursive_image_call()
+
+
+
+if __name__ == "__main__":
+
+    image = cv2.imread("saved/legno_brugola_69.jpg.jpg", flags=cv2.IMREAD_GRAYSCALE)
+    growing = circleGrowing(image)
+    growing.start()
+    # growing.save_results_as_video()
