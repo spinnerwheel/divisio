@@ -127,14 +127,18 @@ def bilateral_filter(image, sigma_color, sigma_space):
     """
     return cv2.bilateralFilter(image)
 
-def contornus(image):
+def contornus(image,treshold):
     """Returns the contornus of the image"""
-    contours, hierarchy = cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    img_fill = np.zeros_like(image)
-    cv2.drawContours(img_fill, contours, -1, 255, cv2.FILLED)
-    cv2.imshow("contornus", img_fill)
-    cv2.waitKey(0)
-    i = 0
+    # find contours in the binary image
+    contours, hierarchy = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # create a new blank image
+    # iterate over all the contours and draw them onto the new image
+    for i, contour in enumerate(contours):
+        if len(contour) > treshold:
+            new_img = np.zeros(image.shape, np.uint8)
+            cv2.drawContours(new_img, [contour], 0, (255, 255, 255), -1)
+            cv2.imwrite(f'./splitted/output_image{i}.png', new_img)
+    # save the new image
     
 def morphology_fill(image):
     kernel = np.ones((5, 5), np.uint8)

@@ -34,10 +34,10 @@ class columGrowing:
         
     def recursive_call(self):
         for colum in range(self.base):
+            self.disp = 0
             self.inside = False
             row = 0
             while row < self.height:
-                self.inside = False
                 if self.image[row,colum] == 0:                  #trovo n zeri
                     row = self._keep(row,colum,0,0)
                 if row < self.height and self.image[row,colum] == 255:      #trovo m 255 sto per entrare
@@ -50,6 +50,7 @@ class columGrowing:
                             row = self._keep(row,colum,0,255)
                         else:
                             row = self._keep(row,colum,0,0)
+                            self.inside = not self.inside
                     else:
                         row = self._keep(row,colum,0,0)
                         

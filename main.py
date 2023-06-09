@@ -32,7 +32,8 @@ if __name__ == "__main__":
     dilate_kernel = skimage.morphology.disk(1)
     dilate_kernel_two = skimage.morphology.disk(2)
     erode_kernel = np.ones((1,4), np.uint8)
-    for image in images:
+    ax = -1
+    for image in images[30:34]:
         print(f"Processing image {len(result)+1}/{len(images)}...", end="\r")
         #resize the image with cv2 to 128x128
         image = cv2.resize(image, (128,128))
@@ -45,8 +46,10 @@ if __name__ == "__main__":
         gc = columGrowing(image)
         gc.recursive_call()
         image = gc.output_image
-
+        image = erode_image(image, erode_kernel)
+        image = dilate_image(image, dilate_kernel_two)
         result.append(image)
+
     plot(result, filenames, "Result")
 '''      
 final = []
