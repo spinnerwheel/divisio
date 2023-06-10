@@ -24,6 +24,7 @@ def load_images_from_folder(folder, return_filenames=False):
     filenames = os.listdir(folder)
     for filename in filenames:
         image = cv2.imread(os.path.join(folder,filename))
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         images.append(image)
     if return_filenames is True:
         return images, filenames
@@ -127,7 +128,7 @@ def bilateral_filter(image, sigma_color, sigma_space):
     """
     return cv2.bilateralFilter(image)
 
-def contornus(image,treshold):
+def contornus(image, treshold, save_in_folder=True):
     """Returns the contornus of the image"""
     # find contours in the binary image
     contours, hierarchy = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -137,7 +138,10 @@ def contornus(image,treshold):
         if len(contour) > treshold:
             new_img = np.zeros(image.shape, np.uint8)
             cv2.drawContours(new_img, [contour], 0, (255, 255, 255), -1)
-            cv2.imwrite(f'./splitted/output_image{i}.png', new_img)
+            if save_in_folder is True:
+                cv2.imwrite(f'./splitted/output_image{i}.png', new_img)
+            else:
+                return new_img
     # save the new image
     
 def morphology_fill(image):
@@ -244,7 +248,7 @@ class circleGrowing:
 
     def _first_internal_edge(self):
         index = 0
-        row, col = (None, None)bibite
+        row, col = (None, None)
         while not self.inside:
             if self.onEdge is True:
                 if self.image[index+1, index+1] == 0:
