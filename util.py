@@ -1,10 +1,9 @@
-import cv2
-import os
 import math
-import numpy as np
+import os
+
+import cv2
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import datetime
+import numpy as np
 
 # pylint: disable = no-name-in-module
 
@@ -20,6 +19,10 @@ WELCOME ="""
 """
 
 def load_images_from_folder(folder, return_filenames=False):
+    """
+    Load images from `folder` and return RGB version of it
+    Can optionally returns filenames of those images
+    """
     images = []
     filenames = os.listdir(folder)
     for filename in filenames:
@@ -89,7 +92,6 @@ def median_filter(image, kernel_size):
     """Returns the median filtered image"""
     return cv2.medianBlur(image, kernel_size)
 
-#write a script that returns the y channel of the ycbcr image
 def ycbcr_filter(image):
     """Returns the YCbCr image and the Y channel"""
     ycbcr_image = cv2.cvtColor(image, cv2.COLOR_RGB2YCrCb)
@@ -100,24 +102,20 @@ def gray_filter(image):
     """Returns the gray image"""
     return cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
-#write a function that takes in input an image and a sigma value and returns the gaussian filtered image
 def gaussian_filter(image, sigma):
-    """Returns the gaussian filtered image"""
+    """Returns the gaussian filtered image of `sigma`"""
     return cv2.GaussianBlur(image, (0,0), sigma)
 
-#write a function that takes in input an image and a sigma value and returns the canny filtered image
 def canny_filter(image, sigma, low_threshold, high_threshold):
     """Returns the canny filtered image"""
     return cv2.Canny(image, low_threshold, high_threshold, sigma)
 
-#write a function that takes in input an image and a kernel and returns the dilated image
 def dilate_image(image, kernel):
-    """Returns the dilated image"""
+    """Returns the dilated image using `kernel`"""
     return cv2.dilate(image, kernel)
 
-#write a function that takes in input an image and a kernel and returns the eroded image
 def erode_image(image, kernel):
-    """Returns the eroded image"""
+    """Returns the eroded image using `kernel`"""
     return cv2.erode(image, kernel)
 
 def bilateral_filter(image, sigma_color, sigma_space):
@@ -131,7 +129,7 @@ def bilateral_filter(image, sigma_color, sigma_space):
 def contornus(image, treshold, save_in_folder=True):
     """Returns the contornus of the image"""
     # find contours in the binary image
-    contours, hierarchy = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     # create a new blank image
     # iterate over all the contours and draw them onto the new image
     for i, contour in enumerate(contours):
@@ -183,14 +181,6 @@ class circleGrowing:
         self.output_image[row, col] = 255
         self.marked[row, col] = [255, 0, 0]
 
-        # self.log.append([row, col])
-
-        # self.marked[row, col] = [255, 0, 0]
-        # plt.imshow(self.marked, )
-        # plt.axis("off")
-        # plt.show(block=False)
-        # plt.close()
-
 
     def _generate_mock_image(self, width, height):
         image = np.zeros((width, height))
@@ -204,16 +194,6 @@ class circleGrowing:
         image[distance < radius[2]] = 255
         image[distance < radius[3]] = 0
         return image
-
-
-    def save_results_as_video(self):
-        base_filename = datetime.datetime.now()
-        for i, result in enumerate(self.results):
-            image = np.array(result, dtype=np.uint8)
-            cv2.imwrite(f"{base_filename}-{i}.jpg", image)
-
-
-###########################################################
 
 
     def _next_neighbors_edge(self, neighbors):
@@ -289,12 +269,3 @@ class circleGrowing:
         # print(f"Point: {row}, {col}\t", end="\r")
         self._mark(row, col)
         self._recursive_image_call()
-
-
-
-if __name__ == "__main__":
-
-    image = cv2.imread("saved/legno_brugola_69.jpg.jpg", flags=cv2.IMREAD_GRAYSCALE)
-    growing = circleGrowing(image)
-    growing.start()
-    # growing.save_results_as_video()

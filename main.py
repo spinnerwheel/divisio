@@ -1,11 +1,8 @@
 import argparse
-import math
 
 import numpy as np
 import skimage as sk
-from skimage.color import rgb2gray
 from sklearn import metrics
-from sklearn.datasets import make_blobs
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
@@ -63,11 +60,11 @@ for mask, original, filename in zip(masks, originals, filenames):
 
         final.append(res[0:2])
 
-n = 5
+n_neighbors = 5
 
 X_train, X_test, y_train, y_test = train_test_split(final, labels, test_size = 0.3)
 
-knn = KNeighborsClassifier(n_neighbors = n)
+knn = KNeighborsClassifier(n_neighbors = n_neighbors)
 
 knn.fit(X_train, y_train)
 
