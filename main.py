@@ -6,6 +6,9 @@ from sklearn import metrics
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.feature_selection import SelectKBest
+from sklearn.naive_bayes import GaussianNB
+from sklearn.pipeline import Pipeline
 
 from columGrowing import *
 from util import *
@@ -26,7 +29,8 @@ if __name__ == "__main__":
     originals, filenames = load_images_from_folder(folder, return_filenames=True)
     masks = []
     dilate_kernel = sk.morphology.disk(1)
-    dilate_kernel_two = sk.morphology.disk(2)
+    #dilate_kernel_two = sk.morphology.disk(2)
+    dilate_kernel_two = sk.morphology.disk(1)
     erode_kernel = np.ones((1,4), np.uint8)
     ax = -1
     for original in originals:
@@ -45,37 +49,60 @@ if __name__ == "__main__":
         mask = contornus(image, 30, save_in_folder=False)
         masks.append(mask)
 
-final = []
-labels = []
+    final = []
+    labels = []
+    i=0
 
-for mask, original, filename in zip(masks, originals, filenames):
-    if (original is not None) and (mask is not None) and (filename is not None):
-        im = original[:,:,0] & mask
-        mu = sk.measure.moments_central(im)
-        nu = sk.measure.moments_normalized(mu)
-        res = sk.measure.moments_hu(nu)
+    for mask, original, filename in zip(masks, originals, filenames):
+        if (original is not None) and (mask is not None) and (filename is not None):
+            im = original[:,:,0] & mask
+            """"
+            print(i)
+            i=i+1
+            cv2.imshow('image',im)
+            cv2.waitKey(0)
+            """
 
-        label = filename.split('.')[0].split("-")[2]
-        labels.append(label)
+            mu = sk.measure.moments_central(im)
+            nu = sk.measure.moments_normalized(mu)
+            res = sk.measure.moments_hu(nu)
 
-        final.append(res[0:2])
+            label = filename.split('.')[0].split("-")[2]
+            metà = len(label) // 2  # Trova la posizione a metà della stringa (arrotondato per difetto)
 
-n_neighbors = 5
+            prima_metà = label[:metà]  # Prendi la prima metà della stringa
+            seconda_metà = label[metà:]  # Prendi la seconda metà della stringa
 
-X_train, X_test, y_train, y_test = train_test_split(final, labels, test_size = 0.3)
+            label = prima_metà + '\n' + seconda_metà  # Concatena tutto insieme
 
-knn = KNeighborsClassifier(n_neighbors = n_neighbors)
+            labels.append(label)
 
-knn.fit(X_train, y_train)
+            final.append(res)
 
-y_pred = knn.predict(X_test)
+    
+    print(len(final))
+    n_neighbors=3
 
-# stampo la percentuale di accuratezza
-print(f"Accuracy with k={n}: {accuracy_score(y_test, y_pred)*100}")
+    X_train, X_test, y_train, y_test = train_test_split(final, labels, test_size = 0.35)
 
-confusion_matrix = metrics.confusion_matrix(y_test, y_pred)
+    #classifier = KNeighborsClassifier(n_neighbors=n_neighbors)
+    classifier = GaussianNB()
 
-cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix = confusion_matrix, display_labels = knn.classes_)
+    feature_selector = SelectKBest(k=4) # Seleziona le 4 features più significative
 
-cm_display.plot()
-plt.show()
+    # Creazione del pipeline che combina il selettore delle features e il classificatore Naive Bayes
+    classifier = Pipeline([('feature_selector', feature_selector), ('naive_bayes', classifier)])
+
+    classifier.fit(X_train, y_train)
+
+    y_pred = classifier.predict(X_test)
+
+    # stampo la percentuale di accuratezza
+    print(f"Accuracy with k={n_neighbors}: {accuracy_score(y_test, y_pred)*100}")
+
+    confusion_matrix = metrics.confusion_matrix(y_test, y_pred)
+
+    cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix = confusion_matrix, display_labels = classifier.classes_)
+
+    cm_display.plot()
+    plt.show()
