@@ -62,7 +62,7 @@ if __name__ == "__main__":
             cv2.imshow('image',im)
             cv2.waitKey(0)
             """
-
+            
             mu = sk.measure.moments_central(im)
             nu = sk.measure.moments_normalized(mu)
             res = sk.measure.moments_hu(nu)

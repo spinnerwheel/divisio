@@ -152,6 +152,24 @@ def connected_components(image):
     """Returns the connected components of the image"""
     return cv2.connectedComponents(image)
 
+def getPerimeter(img):    
+    contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    max_contour = max(contours, key=cv2.contourArea)
+
+    perimeter = cv2.arcLength(max_contour, True)
+
+    return perimeter
+
+def getArea(img):
+    contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    max_contour = max(contours, key=cv2.contourArea)
+
+    area = cv2.contourArea(max_contour)
+
+    return area
+
 
 class circleGrowing:
     image = None
@@ -269,3 +287,5 @@ class circleGrowing:
         # print(f"Point: {row}, {col}\t", end="\r")
         self._mark(row, col)
         self._recursive_image_call()
+
+
