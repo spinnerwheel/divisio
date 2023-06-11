@@ -56,7 +56,7 @@ if __name__ == "__main__":
     for mask, original, filename in zip(masks, originals, filenames):
         if (original is not None) and (mask is not None) and (filename is not None):
             im = original[:,:,0] & mask
-            """"
+            """
             print(i)
             i=i+1
             cv2.imshow('image',im)
@@ -67,19 +67,27 @@ if __name__ == "__main__":
             nu = sk.measure.moments_normalized(mu)
             res = sk.measure.moments_hu(nu)
 
-            label = filename.split('.')[0].split("-")[2]
-            metà = len(label) // 2  # Trova la posizione a metà della stringa (arrotondato per difetto)
+            #res = np.zeros(0)
 
-            prima_metà = label[:metà]  # Prendi la prima metà della stringa
-            seconda_metà = label[metà:]  # Prendi la seconda metà della stringa
+            label = filename.split('.')[0].split("-")[2]
+            metà = len(label) // 2 
+            prima_metà = label[:metà] 
+            seconda_metà = label[metà:]  
 
             label = prima_metà + '\n' + seconda_metà  # Concatena tutto insieme
-
             labels.append(label)
 
+            area = getArea(im)
+            perimeter = getPerimeter(im)
+            div = area/perimeter
+
+            res = np.append(res, area)
+            res = np.append(res, perimeter)
+            res = np.append(res, div)
+   
+   
             final.append(res)
 
-    
     print(len(final))
     n_neighbors=3
 
@@ -88,7 +96,7 @@ if __name__ == "__main__":
     #classifier = KNeighborsClassifier(n_neighbors=n_neighbors)
     classifier = GaussianNB()
 
-    feature_selector = SelectKBest(k=4) # Seleziona le 4 features più significative
+    feature_selector = SelectKBest(k=5) # Seleziona le 4 features più significative
 
     # Creazione del pipeline che combina il selettore delle features e il classificatore Naive Bayes
     classifier = Pipeline([('feature_selector', feature_selector), ('naive_bayes', classifier)])
