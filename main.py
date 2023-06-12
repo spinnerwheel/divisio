@@ -74,9 +74,6 @@ if __name__ == "__main__":
             prima_metà = label[:metà] 
             seconda_metà = label[metà:]  
 
-            label = prima_metà + '\n' + seconda_metà  # Concatena tutto insieme
-            labels.append(label)
-
             area = getArea(im)
             perimeter = getPerimeter(im)
             div = area/perimeter
@@ -87,6 +84,9 @@ if __name__ == "__main__":
    
    
             final.append(res)
+
+
+    plot_features(final[:2], labels)
 
     print(len(final))
     n_neighbors=3
