@@ -60,6 +60,8 @@ for mask, original, filename in zip(masks, originals, filenames):
 
         final.append(res[0:2])
 
+plot_features(final, labels)
+
 n_neighbors = 5
 
 X_train, X_test, y_train, y_test = train_test_split(final, labels, test_size = 0.3)
@@ -71,7 +73,7 @@ knn.fit(X_train, y_train)
 y_pred = knn.predict(X_test)
 
 # stampo la percentuale di accuratezza
-print(f"Accuracy with k={n}: {accuracy_score(y_test, y_pred)*100}")
+print(f"Accuracy with k={n_neighbors}: {accuracy_score(y_test, y_pred):.1f}")
 
 confusion_matrix = metrics.confusion_matrix(y_test, y_pred)
 
