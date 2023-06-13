@@ -1,7 +1,7 @@
 import math
 import os
 from matplotlib.patches import Patch
-
+from skimage.measure import perimeter
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -191,23 +191,31 @@ def connected_components(image):
     """Returns the connected components of the image"""
     return cv2.connectedComponents(image)
 
-def getPerimeter(img):    
-    contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
-    max_contour = max(contours, key=cv2.contourArea)
+def getPerimeter(image):
+    count = 0
+    x,y = image.shape
+    for i in range(x):
+        for j in range(y):  
+            if image[i][j] == 255:
+                if image[i][j+1] == 0 or image[i][j-1] == 0 or image[i+1][j] == 0 or image[i-1][j] == 0:
+                    count += 1
+    return count
 
-    perimeter = cv2.arcLength(max_contour, True)
+def getArea(image):
+    count = 0
+    x,y = image.shape
+    for i in range(x):
+        for j in range(y):  
+            if image[i][j] == 255:
+                count += 1
+    return count
 
-    return perimeter
-
-def getArea(img):
-    contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
-    max_contour = max(contours, key=cv2.contourArea)
-
-    area = cv2.contourArea(max_contour)
-
-    return area
+def convex_hull(image):
+    """Returns the convex hull of the image"""
+    #convert form uint8 to float32
+    image = np.float32(image)/255
+    image = np.uint8(image)
+    return cv2.convexHull(image)
 
 
 class circleGrowing:
