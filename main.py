@@ -32,18 +32,13 @@ if __name__ == "__main__":
     for original in originals:
         print(f"Processing image {len(masks)+1}/{len(originals)}...", end="\r")
         image = original.copy()
+        image = cv2.resize(image, (image.shape[1]//4, image.shape[0]//4))
         image = ycbcr_filter(image)[0]
-        image = gaussian_filter(image, 2.4)
-        image = canny_filter(image, 1,30,60)
-        image = dilate_image(image, dilate_kernel)
-        image = median_filter(image, 3)
-        gc = columGrowing(image)
-        gc.recursive_call()
-        image = gc.output_image
-        image = erode_image(image, erode_kernel)
-        image = dilate_image(image, dilate_kernel_two)
-        mask = contornus(image, 30, save_in_folder=False)
-        masks.append(mask)
+        im = gaussian_filter(image,9)
+        im = canny_filter(im,1,90,220)
+        im = contornus(im, 0, True)
+        
+        
 
 final = []
 labels = []
