@@ -1,6 +1,7 @@
 import math
 import os
-
+from matplotlib.patches import Patch
+from skimage.measure import perimeter
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,6 +18,22 @@ WELCOME ="""
 
 
 """
+TABLE = {
+  "brugola": "#D2691E",
+  "cacciavite": "#7FFF00",
+  "cavatappi": "#B22222",
+  "cesoia": "#FFFF00",
+  "chiave": "#FF69B4",
+  "disco": "#00CED1",
+  "forbice": "#FFD700",
+  "forchetta": "#9400D3",
+  "martello": "#FF0000",
+  "moschettone": "#4B0082",
+  "paletta": "#1E90FF",
+  "scalpello": "#FF8C00",
+  "spatola": "#FF00FF",
+  "unknown": "#808080"
+}
 
 def load_images_from_folder(folder, return_filenames=False):
     """
@@ -32,6 +49,28 @@ def load_images_from_folder(folder, return_filenames=False):
     if return_filenames is True:
         return images, filenames
     return images
+
+def plot_features(features:list, labels:list):
+    if len(features[0]) != 2:
+        raise ValueError(f"Al momento posso plottare solo due features alla volta. Numero di features passate: {len(features)}")
+    if len(features) != len(labels):
+        raise ValueError(f"La lunghezza di features e labels dovrebbe essere la stessa.\nlen(features) = {len(features)}\nlen(labels) = {len(labels)}")
+    Xs = [f[0] for f in features]
+    Ys = [f[1] for f in features]
+    colors = _labels_to_colors(labels)
+
+    handles = [Patch(facecolor=color) for (_, color) in TABLE.items()]
+    for x,y,c,l in zip(Xs, Ys, colors, labels):
+        plt.scatter(x, y, c=c, label=l)
+    plt.legend(handles=handles, labels=TABLE.keys())
+    plt.show()
+
+def _labels_to_colors(labels:list):
+    """Convert a list of string to a list of colors in the format #ffffff"""
+    colors = []
+    for label in labels:
+        colors.append(TABLE[label])
+    return colors
 
 def plot(images, titles=None, suptitle=None):
     """
@@ -152,6 +191,32 @@ def connected_components(image):
     """Returns the connected components of the image"""
     return cv2.connectedComponents(image)
 
+def getPerimeter(image):
+    count = 0
+    x,y = image.shape
+    for i in range(x):
+        for j in range(y):  
+            if image[i][j] == 255:
+                if image[i][j+1] == 0 or image[i][j-1] == 0 or image[i+1][j] == 0 or image[i-1][j] == 0:
+                    count += 1
+    return count
+
+def getArea(image):
+    count = 0
+    x,y = image.shape
+    for i in range(x):
+        for j in range(y):  
+            if image[i][j] == 255:
+                count += 1
+    return count
+
+def convex_hull(image):
+    """Returns the convex hull of the image"""
+    #convert form uint8 to float32
+    image = np.float32(image)/255
+    image = np.uint8(image)
+    return cv2.convexHull(image)
+
 
 class circleGrowing:
     image = None
@@ -269,3 +334,5 @@ class circleGrowing:
         # print(f"Point: {row}, {col}\t", end="\r")
         self._mark(row, col)
         self._recursive_image_call()
+
+
