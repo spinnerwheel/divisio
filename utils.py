@@ -72,3 +72,23 @@ def flood_filling(image, seed_point):
     im_floodfill_inv = cv2.bitwise_not(im_floodfill)
     filled_image = image | im_floodfill_inv
     return filled_image
+
+
+def multi_label_connected_components(image,a):
+    save = False
+    output_images = []
+    analysis = cv2.connectedComponentsWithStats(image,8,cv2.CV_32S)
+    (totalLabels, label_ids, values, centroid) = analysis
+    output = np.zeros(image.shape, dtype="uint8")
+    for i in range(1, totalLabels):
+        area = values[i, cv2.CC_STAT_AREA] 
+        if (area > a):
+            save = True
+            componentMask = (label_ids == i).astype("uint8") * 255
+            output = cv2.bitwise_or(output, componentMask)
+        if(save):
+            output_images.append(output)
+            save = False
+        output = np.zeros(image.shape, dtype="uint8")
+    return output_images
+

@@ -8,7 +8,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.neighbors import KNeighborsClassifier
 from featureExtraction import *
 
-images,names = load_images('./filled/')
+images,names = load_images('./results/')
 labels = []
 features = []
 
@@ -18,27 +18,22 @@ for image,name in zip(images,names):
     
     area = getArea(image)
     perimeter = getPerimeter(image)
-    if perimeter != 0:
-        rapporto = area/perimeter**2
-    else:
-        rapporto = 0
+    major, minor = get_axis(image)
     
-    single_feature = np.array([area,perimeter,rapporto])
+    single_feature = np.array([area,perimeter,major, minor])
     
     features.append(single_feature)
-    
 
-feature_train,feature_test,label_train,label_test = train_test_split(features,labels,test_size=0.2)
-knn = KNeighborsClassifier(n_neighbors=3)
+feature_train,feature_test,label_train,label_test = train_test_split(features,labels,test_size=0.3,random_state=957)
+knn = KNeighborsClassifier(n_neighbors=4)
 knn.fit(feature_train,label_train)
-
 y_pred = knn.predict(feature_test)
-
+    
 print(accuracy_score(label_test,y_pred))
 
 confusion_matrix = metrics.confusion_matrix(label_test, y_pred)
 
-cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix = confusion_matrix, display_labels = knn.classes_)
+cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix = confusion_matrix, display_labels = knn.classes_,)
 
 cm_display.plot()
 plt.show()
