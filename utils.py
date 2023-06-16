@@ -1,8 +1,12 @@
-import cv2
 import os
+
+import cv2
 import matplotlib.pyplot as plt
-from sklearn.cluster import KMeans
 import numpy as np
+from sklearn import metrics
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
 
 def load_images(path):
     image_list = []
@@ -92,3 +96,33 @@ def multi_label_connected_components(image,a):
         output = np.zeros(image.shape, dtype="uint8")
     return output_images
 
+def draw_confusion_matrix(Y_test,y_pred,knn):
+    confusion_matrix = metrics.confusion_matrix(Y_test, y_pred)
+
+    cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix = confusion_matrix, display_labels = knn.classes_,)
+
+    cm_display.plot()
+    plt.show()
+    
+    
+def find_best_seed(knn,train_fetures,train_labels,seeds,show=False):
+    accuracy_scores = []
+    for seed in seeds:
+        X_train,X_test, Y_train,Y_test = train_test_split(train_fetures,train_labels,test_size=0.3,random_state=seed)
+        knn.fit(X_train,Y_train)
+        y_pred = knn.predict(X_test)
+        accuracy_scores.append(accuracy_score(Y_test,y_pred))
+    if show:       
+        print("Accuracy: %0.2f (+/- %0.2f)" % (np.mean(accuracy_scores), np.std(accuracy_scores) * 2))
+        print("Max Accuracy: %0.2f" % (np.max(accuracy_scores))+ " with random_state: " + str(seeds[(np.argmax(accuracy_scores))]))
+        print("Min Accuracy: %0.2f" % (np.min(accuracy_scores))+ " with random_state: " + str(seeds[(np.argmin(accuracy_scores))]))
+        
+    return seeds[(np.argmax(accuracy_scores))]
+
+def get_label_prob(knn,feature):
+        y_pred = knn.predict_proba(np.reshape(feature,(1,-1)))
+        label = knn.classes_[np.argmax(y_pred)]
+        best_prob = np.max(y_pred)
+        return label,best_prob
+
+    

@@ -1,5 +1,5 @@
 import cv2
-from utils import *
+from binarization import *
 import numpy as np
 
 def getArea(image):
@@ -14,14 +14,14 @@ def getPerimeter(image):
 
 def getORB(img): 
     orb = cv2.ORB_create()
-    keypoints, descriptors = orb.detectAndCompute(img, None) 
+    _, descriptors = orb.detectAndCompute(img, None) 
     return  np.mean(descriptors)
 
-def convex_feature(img):
+def get_convex_feature(img):
     convex_im = draw_convex_hull(img)
     convex_area = getArea(convex_im)
     area = getArea(img)
-    return convex_area/area
+    return convex_area-area
     
     
 def draw_convex_hull(img):
