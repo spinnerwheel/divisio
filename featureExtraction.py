@@ -1,9 +1,9 @@
 import cv2
 from skimage.measure import find_contours
-
 from binarization import *
 import numpy as np
 from pyefd import elliptic_fourier_descriptors
+from skimage.measure import moments_central, moments_normalized, moments_hu
 
 def getArea(image):
     area = cv2.countNonZero(image)
@@ -66,3 +66,11 @@ def efd_feature(img):
         flat_list, order=20, normalize=True)
     
     return coeffs.flatten()[3:]
+
+def get_hu(img):
+
+    mu = moments_central(img)
+    nu = moments_normalized(mu)
+    hu_moments = moments_hu(nu)
+    return hu_moments
+    
