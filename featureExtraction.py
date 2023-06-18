@@ -1,6 +1,9 @@
 import cv2
+from skimage.measure import find_contours
+
 from binarization import *
 import numpy as np
+from pyefd import elliptic_fourier_descriptors
 
 def getArea(image):
     area = cv2.countNonZero(image)
@@ -49,3 +52,17 @@ def get_axis(img):
             major_axis = np.sqrt(area / np.pi)
             minor_axis = aspect_ratio * np.sqrt(area / np.pi)
     return major_axis,minor_axis
+
+
+def efd_feature(img):
+
+    contours = find_contours(img, 0.8)
+    flat_list = []
+    for sublist in contours:
+        for item in sublist:
+            flat_list.append(item)
+
+    coeffs = elliptic_fourier_descriptors(
+        flat_list, order=20, normalize=True)
+    
+    return coeffs.flatten()[3:]
