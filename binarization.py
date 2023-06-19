@@ -53,13 +53,13 @@ def multi_images_binarization(images,names):
         multi_im = multi_label_connected_components(im,1000)
         j = 0
         for im in multi_im:
-            im = dilate_image(im,disk(2))
+            im = dilate_image(im,disk(5))
             im = flood_filling(im,(0,0))
+            im = erode_image(im,disk(5))
             if not is_empty(im):
                 im = cv2.resize(im, (0,0), fx=2, fy=2)
                 image_results.append(im)
-                name = name.split('.')[0]
-                name_results.append(f'{name}_{j}.png')
+                name_results.append(f'multi-{j}-{i}.png')
                 j+=1
         i+=1
     save_images(multi_write_path,image_results,name_results)
