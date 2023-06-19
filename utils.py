@@ -1,5 +1,5 @@
 import os
-
+import matplotlib.colors as mcolors
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -105,7 +105,8 @@ def draw_confusion_matrix(Y_test,y_pred,knn):
     plt.show()
     
     
-def find_best_seed(knn,train_fetures,train_labels,seeds,show=False):
+def find_best_seed(knn,train_fetures,train_labels,show=False):
+    seeds = np.random.randint(0,10000000,1000)
     accuracy_scores = []
     for seed in seeds:
         X_train,X_test, Y_train,Y_test = train_test_split(train_fetures,train_labels,test_size=0.3,random_state=seed)
@@ -125,4 +126,59 @@ def get_label_prob(knn,feature):
         best_prob = np.max(y_pred)
         return label,best_prob
 
-    
+def plot_features(features:list, labels:list, legend=True):
+    if len(features[0]) != 2:
+        raise ValueError(f"Al momento posso plottare solo due features alla volta. Numero di features passate: {len(features[0])}")
+    if len(features) != len(labels):
+        raise ValueError(f"La lunghezza di features e labels dovrebbe essere la stessa.\nlen(features) = {len(features)}\nlen(labels) = {len(labels)}")
+    Xs = [f[0] for f in features]
+    Ys = [f[1] for f in features]
+    colors = _labels_to_colors(labels)
+
+    # handles = [Patch(facecolor=color) for color in TABLE.values()]
+    for x,y,c,l in zip(Xs, Ys, colors, labels):
+        plt.scatter(x, y, c=c, label=l)
+    plt.legend(labels=np.unique(labels))
+    # plt.legend()
+    plt.show()
+
+def _labels_to_colors(labels:list):
+    TABLE = {
+  "brugola": "#D2691E",
+  "cacciavite": "#7FFF00",
+  "cavatappi": "#B22222",
+  "cesoia": "#FFFF00",
+  "chiave": "#FF69B4",
+  "disco": "#00CED1",
+  "forbice": "#FFD700",
+  "forchetta": "#9400D3",
+  "martello": "#FF0000",
+  "moschettone": "#4B0082",
+  "paletta": "#1E90FF",
+  "scalpello": "#FF8C00",
+  "spatola": "#FF00FF",
+  "unknown": "#808080"
+}
+
+    """Convert a list of string to a list of colors in the format #ffffff"""
+    # colors = []
+    # for label in labels:
+    #     try:
+    #         colors.append(TABLE[label])
+    #     except KeyError:
+    #         table = list(TABLE.values())
+    #         colors.append(table[hash(label) % len(table)])
+    table = []
+    values = []
+    for i,u in enumerate(np.unique(labels)):
+        table.append([u,i])
+    TABLE = dict(table)
+    for label in labels:
+        values.append(TABLE[label])
+    cmap = plt.get_cmap("Set3")
+    norm = mcolors.Normalize(vmin=min(values), vmax=max(values))
+    for row in table: 
+        row[1] = cmap(norm(row[1]))
+    TABLE = dict(table)
+    colors = [cmap(norm(value)) for value in values]
+    return colors
