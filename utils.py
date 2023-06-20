@@ -8,7 +8,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 
-def load_images(path):
+def load_images(path):      #carica tutte le immagini in path e ritorna una lista di immagini e una lista di nomi
     image_list = []
     images_names = os.listdir(path)
     for image_name in images_names:
@@ -16,13 +16,13 @@ def load_images(path):
         image_list.append(cv2.imread(read_path))
     return image_list, images_names
 
-def save_images(path,image_list,image_name):
+def save_images(path,image_list,image_name):        #salva le immagini in image_list con i nomi in image_name
     delete_images(path)
     for image,name in zip(image_list,image_name):
         write_path = os.path.join(path,name)
         cv2.imwrite(write_path,image)
         
-def delete_images(path):
+def delete_images(path):            #elimina tutte le immagini in path
     images_names = os.listdir(path)
     for image_name in images_names:
         os.remove(os.path.join(path,image_name))
@@ -30,26 +30,14 @@ def delete_images(path):
 def gray_scale(image):
     return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-def mean_blur(image,kernel=3):
-    return cv2.medianBlur(image, kernel)
-
 def gaussian_blur(image,kernel=3):
     return cv2.GaussianBlur(image, (kernel,kernel), 0)
 
 def bilateral_filter(image,kernel=3):
     return cv2.bilateralFilter(image, kernel, 100, 100)
 
-def median_filter(image,kernel=3):
-    return cv2.medianBlur(image, kernel)
-
 def canny_edge(image,sigma = 1,threshold1=100,threshold2=200):
     return cv2.Canny(image, threshold1, threshold2,sigma)
-
-def histogram(image,path):
-    img = cv2.calcHist([image], [0], None, [256], [0,256])
-    plt.hist(img.ravel(),256,[0,256])
-    plt.savefig(path)
-    plt.close()
 
 def dilate_image(image,kernel):
     return cv2.dilate(image, kernel, iterations=1)
@@ -57,7 +45,7 @@ def dilate_image(image,kernel):
 def erode_image(image,kernel):
     return cv2.erode(image, kernel, iterations=1)
 
-def label_connected_components(image,a):
+def label_connected_components(image,a):        #ritorna un'immagine connessa con area maggiore di a
     analysis = cv2.connectedComponentsWithStats(image,8,cv2.CV_32S)
     (totalLabels, label_ids, values, centroid) = analysis
     output = np.zeros(image.shape, dtype="uint8")
@@ -68,7 +56,7 @@ def label_connected_components(image,a):
             output = cv2.bitwise_or(output, componentMask)
     return output
 
-def flood_filling(image, seed_point):
+def flood_filling(image, seed_point):       #riempie i buchi di un immagine
     im_floodfill = image.copy()
     h, w = image.shape[:2]
     mask = np.zeros((h+2, w+2), np.uint8)
@@ -78,7 +66,7 @@ def flood_filling(image, seed_point):
     return filled_image
 
 
-def multi_label_connected_components(image,a):
+def multi_label_connected_components(image,a):          #ritorna una lista di immagini connessi con area maggiore di a
     save = False
     output_images = []
     analysis = cv2.connectedComponentsWithStats(image,8,cv2.CV_32S)
@@ -96,17 +84,25 @@ def multi_label_connected_components(image,a):
         output = np.zeros(image.shape, dtype="uint8")
     return output_images
 
-def draw_confusion_matrix(Y_test,y_pred,knn):
+def predict_labels(knn,features):                #predice le label di una lista di features
+    label_list = []
+    for feature in features:
+        y_pred = get_label_prob(knn,feature)
+        label_list.append(y_pred)
+    return label_list
+    
+
+def draw_confusion_matrix(Y_test,y_pred,knn):               #disegna la matrice di confusione
     confusion_matrix = metrics.confusion_matrix(Y_test, y_pred)
 
-    cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix = confusion_matrix, display_labels = knn.classes_,)
+    cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix = confusion_matrix, display_labels = knn.classes_)
 
-    cm_display.plot()
+    cm_display.plot(xticks_rotation='vertical')
     plt.show()
     
     
-def find_best_seed(knn,train_fetures,train_labels,show=False):
-    seeds = np.random.randint(0,1000000,5000)
+def find_best_seed(knn,train_fetures,train_labels,show=False):          #trova il seed migliore per il train_test_split
+    seeds = np.random.randint(0,1000000,2000)
     accuracy_scores = []
     for seed in seeds:
         X_train,X_test, Y_train,Y_test = train_test_split(train_fetures,train_labels,test_size=0.2,random_state=seed)
@@ -115,8 +111,8 @@ def find_best_seed(knn,train_fetures,train_labels,show=False):
         accuracy_scores.append(accuracy_score(Y_test,y_pred))
     if show:       
         print("Accuracy: %0.2f (+/- %0.2f)" % (np.mean(accuracy_scores), np.std(accuracy_scores) * 2))
-        print("Max Accuracy: %0.2f" % (np.max(accuracy_scores))+ " with random_state: " + str(seeds[(np.argmax(accuracy_scores))]))
-        print("Min Accuracy: %0.2f" % (np.min(accuracy_scores))+ " with random_state: " + str(seeds[(np.argmin(accuracy_scores))]))
+        print("Max Accuracy: %0.002f" % (np.max(accuracy_scores))+ " with random_state: " + str(seeds[(np.argmax(accuracy_scores))]))
+        print("Min Accuracy: %0.002f" % (np.min(accuracy_scores))+ " with random_state: " + str(seeds[(np.argmin(accuracy_scores))]))
         
     return seeds[(np.argmax(accuracy_scores))]
 
@@ -124,61 +120,6 @@ def get_label_prob(knn,feature):
         y_pred = knn.predict_proba(np.reshape(feature,(1,-1)))
         label = knn.classes_[np.argmax(y_pred)]
         best_prob = np.max(y_pred)
+        if best_prob < 0.5:
+            label = "Unknown"
         return label,best_prob
-
-def plot_features(features:list, labels:list, legend=True):
-    if len(features[0]) != 2:
-        raise ValueError(f"Al momento posso plottare solo due features alla volta. Numero di features passate: {len(features[0])}")
-    if len(features) != len(labels):
-        raise ValueError(f"La lunghezza di features e labels dovrebbe essere la stessa.\nlen(features) = {len(features)}\nlen(labels) = {len(labels)}")
-    Xs = [f[0] for f in features]
-    Ys = [f[1] for f in features]
-    colors = _labels_to_colors(labels)
-
-    # handles = [Patch(facecolor=color) for color in TABLE.values()]
-    for x,y,c,l in zip(Xs, Ys, colors, labels):
-        plt.scatter(x, y, c=c, label=l)
-    plt.legend(labels=np.unique(labels))
-    # plt.legend()
-    plt.show()
-
-def _labels_to_colors(labels:list):
-    TABLE = {
-  "brugola": "#D2691E",
-  "cacciavite": "#7FFF00",
-  "cavatappi": "#B22222",
-  "cesoia": "#FFFF00",
-  "chiave": "#FF69B4",
-  "disco": "#00CED1",
-  "forbice": "#FFD700",
-  "forchetta": "#9400D3",
-  "martello": "#FF0000",
-  "moschettone": "#4B0082",
-  "paletta": "#1E90FF",
-  "scalpello": "#FF8C00",
-  "spatola": "#FF00FF",
-  "unknown": "#808080"
-}
-
-    """Convert a list of string to a list of colors in the format #ffffff"""
-    # colors = []
-    # for label in labels:
-    #     try:
-    #         colors.append(TABLE[label])
-    #     except KeyError:
-    #         table = list(TABLE.values())
-    #         colors.append(table[hash(label) % len(table)])
-    table = []
-    values = []
-    for i,u in enumerate(np.unique(labels)):
-        table.append([u,i])
-    TABLE = dict(table)
-    for label in labels:
-        values.append(TABLE[label])
-    cmap = plt.get_cmap("Set3")
-    norm = mcolors.Normalize(vmin=min(values), vmax=max(values))
-    for row in table: 
-        row[1] = cmap(norm(row[1]))
-    TABLE = dict(table)
-    colors = [cmap(norm(value)) for value in values]
-    return colors

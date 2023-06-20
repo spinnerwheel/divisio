@@ -2,13 +2,13 @@ from utils import *
 from skimage.morphology import disk
 
 
-def is_empty(img):
+def is_empty(img):          #ritorna true se l'immagine è vuota
     if cv2.countNonZero(img) == 0:
         return True
     else:
         return False
     
-def images_binarization(write_path,read_path):
+def images_binarization(write_path,read_path):   #applica la binarizzazione alle immagini e le salva
     images, names = load_images(read_path)
     image_results = [] 
     name_results =[]  
@@ -33,7 +33,7 @@ def images_binarization(write_path,read_path):
 
     save_images(write_path,image_results,name_results)
     
-def multi_images_binarization(images,names):
+def multi_images_binarization(images,names):            #applica la binarizzazione alle immagini con più oggetti ritornando un oggetto per immagine binarizzato
     ''' 
     images, names = load_images(read_path)
     ''' 
@@ -73,8 +73,3 @@ if __name__ == '__main__':
     read_path = './named/'
     write_path = './results/'
     images_binarization(write_path,read_path)
-    '''
-    multi_read_path = './multi/'
-    multi_write_path = './multi_results/'
-    multi_images_binarization(multi_write_path,multi_read_path)
-    '''

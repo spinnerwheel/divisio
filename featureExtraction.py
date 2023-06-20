@@ -12,21 +12,11 @@ def get_perimeter(image):
     perimeter = dil_im - std_image
     return cv2.countNonZero(perimeter)
 
-def getORB(img): 
-    orb = cv2.ORB_create()
-    _, descriptors = orb.detectAndCompute(img, None) 
-    return  np.mean(descriptors)
-
-def get_convex_feature(img):
+def get_convex_feature(img):            #ritorna il rapporto tra area dell'immagine e area del suo guscio convesso
     convex_im = draw_convex_hull(img)
     convex_area = get_area(convex_im)
     area = get_area(img)
     return convex_area-area
-
-def get_hu_moments(img):
-    moments = cv2.moments(img)
-    hu_moments = cv2.HuMoments(moments)
-    return hu_moments    
     
 def draw_convex_hull(img):
     image = img.copy()
@@ -39,7 +29,7 @@ def draw_convex_hull(img):
     cv2.drawContours(hull_img, [hull], 0, 255, -1)
     return hull_img
 
-def get_axis(img):
+def get_axis(img):      #ritorna l'asse maggiore e minore dell'ellisse che meglio approssima il contorno
     image = img.copy()
     contours, hierarchy = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if len(contours) == 0:
@@ -50,16 +40,16 @@ def get_axis(img):
     minor_axis = min(ellipse[1])
     return major_axis,minor_axis
 
-def get_circularity(image):
+def get_circularity(image):    #ritorna la circolarità dell'immagine ovvero il rapporto tra area e perimetro
     area = get_area(image)
     perimeter = get_perimeter(image)
     return (4*np.pi*area)/(perimeter**2)
 
-def get_compactness(image):
+def get_compactness(image):     #ritorna la compattezza dell'immagine ovvero il rapporto tra asse maggiore e area
     area = get_area(image)
     major_axis,_ = get_axis(image)
     return (major_axis**2)/area
 
-def excentricity(img):
+def excentricity(img):          #ritorna l'eccentricità dell'immagine
     major_axis,minor_axis = get_axis(img)
     return np.sqrt(1 - (minor_axis**2)/(major_axis**2))
