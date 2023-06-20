@@ -20,15 +20,17 @@ def images_binarization(write_path,read_path):
         im = image.copy()
         im = gray_scale(im)
         im = gaussian_blur(im,11)
-        im = canny_edge(im,1.2,50,190)
-        im = dilate_image(im,np.ones((2,2),np.uint8))
-        im = multi_label_connected_components(im,350)
+        im = canny_edge(im,1,50,190)
+        im = dilate_image(im,disk(2))
+        im = label_connected_components(im,1500)
         im = dilate_image(im,disk(9))
         im = flood_filling(im,(0,0))
+        im = erode_image(im,disk(9))
         if not is_empty(im):
             image_results.append(im)
             name_results.append(name)
         i+=1
+
     save_images(write_path,image_results,name_results)
     
 def multi_images_binarization(images,names):
@@ -54,8 +56,8 @@ def multi_images_binarization(images,names):
         j = 0
         for im in multi_im:
             im = dilate_image(im,disk(5))
-            im = flood_filling(im,(0,0))
             im = erode_image(im,disk(5))
+            im = flood_filling(im,(0,0))
             if not is_empty(im):
                 im = cv2.resize(im, (0,0), fx=2, fy=2)
                 image_results.append(im)
@@ -67,10 +69,12 @@ def multi_images_binarization(images,names):
     
 
 if __name__ == '__main__':
-    '''
+
     read_path = './named/'
     write_path = './results/'
+    images_binarization(write_path,read_path)
     '''
     multi_read_path = './multi/'
     multi_write_path = './multi_results/'
     multi_images_binarization(multi_write_path,multi_read_path)
+    '''

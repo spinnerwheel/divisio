@@ -106,10 +106,10 @@ def draw_confusion_matrix(Y_test,y_pred,knn):
     
     
 def find_best_seed(knn,train_fetures,train_labels,show=False):
-    seeds = np.random.randint(0,10000000,1000)
+    seeds = np.random.randint(0,1000000,5000)
     accuracy_scores = []
     for seed in seeds:
-        X_train,X_test, Y_train,Y_test = train_test_split(train_fetures,train_labels,test_size=0.3,random_state=seed)
+        X_train,X_test, Y_train,Y_test = train_test_split(train_fetures,train_labels,test_size=0.2,random_state=seed)
         knn.fit(X_train,Y_train)
         y_pred = knn.predict(X_test)
         accuracy_scores.append(accuracy_score(Y_test,y_pred))

@@ -2,11 +2,11 @@ import cv2
 from binarization import *
 import numpy as np
 
-def getArea(image):
+def get_area(image):
     area = cv2.countNonZero(image)
     return area
 
-def getPerimeter(image):
+def get_perimeter(image):
     std_image = image.copy()
     dil_im = dilate_image(image,np.ones((3,3),np.uint8))
     perimeter = dil_im - std_image
@@ -19,9 +19,9 @@ def getORB(img):
 
 def get_convex_feature(img):
     convex_im = draw_convex_hull(img)
-    convex_area = getArea(convex_im)
-    area = getArea(img)
-    return convex_area/area
+    convex_area = get_area(convex_im)
+    area = get_area(img)
+    return convex_area-area
 
 def get_hu_moments(img):
     moments = cv2.moments(img)
@@ -51,12 +51,12 @@ def get_axis(img):
     return major_axis,minor_axis
 
 def get_circularity(image):
-    area = getArea(image)
-    perimeter = getPerimeter(image)
+    area = get_area(image)
+    perimeter = get_perimeter(image)
     return (4*np.pi*area)/(perimeter**2)
 
 def get_compactness(image):
-    area = getArea(image)
+    area = get_area(image)
     major_axis,_ = get_axis(image)
     return (major_axis**2)/area
 
