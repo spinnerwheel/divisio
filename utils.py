@@ -126,21 +126,33 @@ def get_label_prob(knn,feature):
         best_prob = np.max(y_pred)
         return label,best_prob
 
-def plot_features(features:list, labels:list, legend=True):
+def plot_features(feature, labels:list):
+
+    """
     if len(features[0]) != 2:
         raise ValueError(f"Al momento posso plottare solo due features alla volta. Numero di features passate: {len(features[0])}")
     if len(features) != len(labels):
         raise ValueError(f"La lunghezza di features e labels dovrebbe essere la stessa.\nlen(features) = {len(features)}\nlen(labels) = {len(labels)}")
-    Xs = [f[0] for f in features]
-    Ys = [f[1] for f in features]
+        """
+    n= len(feature)
+    Xs = list(range(n+1))
+    print(type(Xs))
+    Ys = feature
     colors = _labels_to_colors(labels)
 
+
     # handles = [Patch(facecolor=color) for color in TABLE.values()]
+
     for x,y,c,l in zip(Xs, Ys, colors, labels):
         plt.scatter(x, y, c=c, label=l)
-    plt.legend(labels=np.unique(labels))
-    # plt.legend()
+        plt.legend(labels=np.unique(labels))
+    plt.xlabel('Item')
+    plt.ylabel('Value')
+    plt.grid(True)
     plt.show()
+    plt.waitforbuttonpress()
+
+
 
 def _labels_to_colors(labels:list):
     TABLE = {
